@@ -84,8 +84,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 .answer-button i { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #a69e90; }
 .answer-button.selected { border-color: var(--green); background: #f0f8ef; box-shadow: 0 0 0 2px rgba(47,128,84,.08); }
 .answer-button.selected i { border: 5px solid var(--green); }
-.quiz-footer { padding: 16px 22px 24px; }
-.quiz-footer .text-button { margin-top: 8px; }
 
 /* Mascot crop */
 .mascot-crop { position: relative; margin-inline: auto; overflow: hidden; }

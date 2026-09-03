@@ -201,6 +201,7 @@ let state = loadState();
 let route = location.hash.replace("#", "") || "top";
 let thinking = false;
 let clockTimer = null;
+let quizTransitioning = false;
 
 function loadState() {
   try {
@@ -385,14 +386,36 @@ function renderQuiz() {
       <span class="question-no">Q${index + 1}.</span>
       <h2>${question.text}</h2>
       <div class="answer-list">${question.options
-        .map(([label], optionIndex) => `<button class="answer-button ${selected === optionIndex ? "selected" : ""}" data-answer="${optionIndex}"><span>${String.fromCharCode(65 + optionIndex)}.</span>${label}<i></i></button>`)
+        .map(([label], optionIndex) => `<button class="answer-button ${selected === optionIndex ? "selected" : ""}" data-answer="${optionIndex}" ${quizTransitioning ? "disabled" : ""}><span>${String.fromCharCode(65 + optionIndex)}.</span>${label}<i></i></button>`)
         .join("")}</div>
     </div>
-    <div class="quiz-footer">
-      <button class="primary-button" data-quiz-next ${selected === undefined ? "disabled" : ""}>${index === questions.length - 1 ? "結果を見る" : "次へ"}</button>
-      ${index ? `<button class="text-button centered" data-nav="quiz-back">ひとつ戻る</button>` : ""}
-    </div>
   </section>`;
+}
+
+function selectDiagnosisAnswer(answerIndex) {
+  if (quizTransitioning) return;
+  const answeredIndex = state.quizIndex;
+  state.answers[answeredIndex] = answerIndex;
+  quizTransitioning = true;
+  saveState();
+  render();
+
+  setTimeout(() => {
+    if (route !== "quiz" || state.quizIndex !== answeredIndex) {
+      quizTransitioning = false;
+      return;
+    }
+    if (answeredIndex < questions.length - 1) {
+      state.quizIndex += 1;
+      quizTransitioning = false;
+      saveState();
+      render();
+      return;
+    }
+    calculateResult();
+    quizTransitioning = false;
+    go("result");
+  }, 220);
 }
 
 function calculateResult() {
@@ -1012,21 +1035,14 @@ document.addEventListener("click", (event) => {
   const nav = event.target.closest("[data-nav]");
   if (nav) return go(nav.dataset.nav);
   if (event.target.closest("[data-start-quiz]")) {
-    state.answers = []; state.quizIndex = 0; saveState(); return go("quiz");
+    state.answers = []; state.quizIndex = 0; quizTransitioning = false; saveState(); return go("quiz");
   }
   if (event.target.closest("[data-start-kaki-quiz]")) return startKakiQuiz();
   const kakiAnswer = event.target.closest("[data-kaki-answer]");
   if (kakiAnswer) return answerKakiQuiz(Number(kakiAnswer.dataset.kakiAnswer));
   if (event.target.closest("[data-kaki-next]")) return advanceKakiQuiz();
   const answer = event.target.closest("[data-answer]");
-  if (answer) {
-    state.answers[state.quizIndex] = Number(answer.dataset.answer); saveState(); return render();
-  }
-  if (event.target.closest("[data-quiz-next]")) {
-    if (state.answers[state.quizIndex] === undefined) return;
-    if (state.quizIndex < questions.length - 1) { state.quizIndex += 1; saveState(); return render(); }
-    calculateResult(); return go("result");
-  }
+  if (answer) return selectDiagnosisAnswer(Number(answer.dataset.answer));
   if (event.target.closest("[data-login]")) {
     const nickname = document.querySelector("#nickname")?.value.trim();
     state.nickname = nickname || "見守り人さん"; state.loggedIn = true; const bonus = claimLoginBonus(); saveState(); toast(`ログインしました　+${bonus}pt`); return go("home");
