@@ -1,0 +1,10 @@
+{
+  "name": "shaberu-kakinoki",
+  "version": "1.0.0",
+  "private": true,
+  "description": "しゃべる柿の木 - 見知不柿を知って、話して、水やりできる体験型Webアプリ",
+  "scripts": {
+    "dev": "python3 -m http.server 4173",
+    "start": "python3 -m http.server 4173"
+  }
+}
