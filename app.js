@@ -97,6 +97,78 @@ const questions = [
   },
 ];
 
+const kakiQuizQuestions = [
+  {
+    question: "会津身不知柿が古くから育てられてきた地域は？",
+    options: ["福島県の会津地方", "青森県の津軽地方", "山梨県の甲府盆地"],
+    answer: 0,
+    explanation: "会津身不知柿は、会津若松市や会津美里町、会津坂下町などで育てられる会津の特産品です。",
+  },
+  {
+    question: "収穫したばかりの会津身不知柿は、どんな柿？",
+    options: ["そのまま甘い甘柿", "渋抜きが必要な渋柿", "酸味の強い柿"],
+    answer: 1,
+    explanation: "収穫時は渋柿です。出荷前に脱渋（渋抜き）することで、上品な甘さを楽しめます。",
+  },
+  {
+    question: "会津身不知柿の渋抜きに使われるものは？",
+    options: ["塩水だけ", "焼酎やガス", "会津の雪だけ"],
+    answer: 1,
+    explanation: "一般的には、収穫後に焼酎などのアルコールやガスを使って渋抜きをします。",
+  },
+  {
+    question: "会津身不知柿の収穫時期として近いのは？",
+    options: ["4月〜5月", "7月〜8月", "10月中旬〜11月下旬"],
+    answer: 2,
+    explanation: "収穫はおおむね10月中旬〜11月下旬。晩秋の会津を代表する果物です。",
+  },
+  {
+    question: "会津身不知柿の特徴に一番近いものは？",
+    options: ["大粒で果汁が多い", "小粒でとても酸っぱい", "皮が青いまま熟す"],
+    answer: 0,
+    explanation: "大粒で、たっぷりの果汁、なめらかな舌触り、とろりとした食感が魅力です。",
+  },
+  {
+    question: "柿の箱に書かれた『開封日』は何の目安？",
+    options: ["種をまく日", "渋抜きが進み食べられる日", "冷凍する日"],
+    answer: 1,
+    explanation: "渋抜き中の柿は、箱の開封日まで待つのがポイント。開ける頃に渋が抜け、おいしく食べられます。",
+  },
+  {
+    question: "会津身不知柿にある別名は？",
+    options: ["御山柿", "磐梯桃", "鶴ヶ城梨"],
+    answer: 0,
+    explanation: "産地の一つである会津若松市門田町御山にちなみ、『御山柿』とも呼ばれます。",
+  },
+  {
+    question: "会津身不知柿は、毎年どこへ献上されることで知られる？",
+    options: ["皇室", "宇宙ステーション", "海外の動物園"],
+    answer: 0,
+    explanation: "会津身不知柿は、毎年皇室に献上される伝統の柿としても知られています。",
+  },
+  {
+    question: "渋抜き直後から時間がたつと、食感はどう変わる？",
+    options: ["徐々にやわらかくなる", "石のように硬くなる", "中が空洞になる"],
+    answer: 0,
+    explanation: "渋抜き直後は比較的硬め。時間とともにやわらかく、とろりとした食感へ変化します。",
+  },
+  {
+    question: "『みしらず』という名前の由来について正しいのは？",
+    options: ["一つだけに決まっている", "おいしさや実の多さにまつわる諸説がある", "外国語をそのまま使った"],
+    answer: 1,
+    explanation: "『身の程を知らず実をつける』『我が身も考えず食べすぎる』など複数の説が伝わっています。",
+  },
+];
+
+const badgeCatalog = [
+  { id: "wakaba", name: "若葉の見守り人", points: 0, icon: "🌱", description: "推し柿との出会いを記念した最初のピン。" },
+  { id: "bucket", name: "バケツスター", points: 50, icon: "💧", description: "50pt達成。木へ気持ちを届け始めた証。" },
+  { id: "scholar", name: "柿ものしり", points: 150, icon: "柿", description: "150pt達成。見知不柿を語れる見守り人。" },
+  { id: "guardian", name: "みまもり名人", points: 300, icon: "🍃", description: "300pt達成。日々の変化に気づける名人。" },
+  { id: "aizu", name: "会津アンバサダー", points: 500, icon: "鶴", description: "500pt達成。会津の魅力を広げる特別ピン。" },
+  { id: "legend", name: "伝説の散水士", points: 1000, icon: "🏆", description: "1,000pt達成。木と仲間に愛された最高位。" },
+];
+
 const defaultState = () => ({
   loggedIn: false,
   nickname: "見守り人さん",
@@ -119,6 +191,10 @@ const defaultState = () => ({
   tomorrowBonus: null,
   journal: [],
   notificationsEnabled: false,
+  kakiQuiz: null,
+  quizAwardDates: [],
+  quizBestScore: 0,
+  quizAttempts: [],
 });
 
 let state = loadState();
@@ -214,6 +290,25 @@ function profile() {
   return profiles.find((item) => item.id === state.profileId) || profiles[2];
 }
 
+function unlockedBadges() {
+  return badgeCatalog.filter((badge) => state.points >= badge.points);
+}
+
+function nextBadge() {
+  return badgeCatalog.find((badge) => state.points < badge.points) || null;
+}
+
+function leaderboard() {
+  const demoMembers = [
+    ["あかべこさん", 1280], ["さくらさん", 940], ["会津っ子さん", 720],
+    ["こづゆさん", 510], ["ばんだいさん", 390], ["みのりさん", 280],
+    ["はるかさん", 190], ["つるがさん", 120], ["ゆきんこさん", 70],
+  ].map(([name, points]) => ({ name, points, self: false }));
+  return [...demoMembers, { name: state.nickname, points: state.points, self: true }]
+    .sort((a, b) => b.points - a.points)
+    .map((member, index) => ({ ...member, rank: index + 1 }));
+}
+
 function mascotMarkup(item = profile(), size = "large") {
   return `<div class="mascot-crop mascot-${size}" aria-label="${item.name}"><img src="assets/kaki-friends.png" alt="" style="--crop:${item.crop}" /></div>`;
 }
@@ -231,6 +326,7 @@ function bottomNav(active) {
   const items = [
     ["home", "⌂", "ホーム"],
     ["chat", "●", "おはなし"],
+    ["fun", "✦", "あそぶ"],
     ["mypage", "♙", "マイページ"],
   ];
   return `<nav class="bottom-nav" aria-label="メインメニュー">${items
@@ -239,7 +335,7 @@ function bottomNav(active) {
 }
 
 function go(next) {
-  if (["home", "chat", "mypage", "mission", "watering"].includes(next) && !state.loggedIn) next = "login";
+  if (["home", "chat", "fun", "ranking", "badges", "kaki-quiz", "quiz-result", "mypage", "mission", "watering"].includes(next) && !state.loggedIn) next = "login";
   route = next;
   history.pushState(null, "", `#${next}`);
   render();
@@ -391,6 +487,7 @@ function renderHome() {
       </div>
       <button class="secondary-button mypage-link" data-nav="mypage">♙ マイページ <span>›</span></button>
       <div class="points-card"><span>あなたのポイント</span><b>${state.points.toLocaleString()} <small>pt</small></b></div>
+      <button class="quiz-teaser" data-start-kaki-quiz><span>今日のサイドクエスト</span><div><b>見知不柿クイズ</b><small>全10問・最大150pt</small></div><i>挑戦する ›</i></button>
       <div class="today-note"><span>今日のひとこと</span><p>「${item.message}」</p></div>
     </div>
     ${bottomNav("home")}
@@ -499,12 +596,104 @@ function renderWatering() {
   </section>`;
 }
 
+function renderFun() {
+  const members = leaderboard();
+  const me = members.find((member) => member.self);
+  const unlocked = unlockedBadges();
+  const quizDone = state.quizAwardDates.includes(todayKey());
+  return `<section class="screen fun-screen">
+    ${topBar("あそぶ・学ぶ", "home")}
+    <div class="fun-hero"><span>柿のこと、もっと知ろう</span><h1>見守り人の<br />おたのしみ広場</h1><p>遊んで学んで、推し柿との思い出を増やそう。</p></div>
+    <div class="fun-content">
+      <button class="fun-quiz-card" data-start-kaki-quiz>
+        <span class="side-quest-label">SIDE QUEST</span><i>?</i><div><h2>見知不柿クイズ</h2><p>ちょうどよい難易度の全10問</p><b>${quizDone ? "今日は復習モード" : "最大 150pt GET"}</b></div><em>›</em>
+      </button>
+      <div class="fun-grid">
+        <button class="fun-stat-card ranking-card" data-nav="ranking"><span>今週の順位</span><b>${me.rank}<small>位</small></b><p>ランキングを見る ›</p></button>
+        <button class="fun-stat-card badge-card" data-nav="badges"><span>ピンバッジ</span><div class="mini-pins">${unlocked.slice(-3).map((badge) => `<i>${badge.icon}</i>`).join("")}</div><b>${unlocked.length}<small> / ${badgeCatalog.length}</small></b><p>コレクションを見る ›</p></button>
+      </div>
+      <div class="fun-tip"><span>柿</span><p>クイズは1日1回ポイントがもらえるよ。間違えても、解説を読めば次はきっと正解！</p></div>
+    </div>
+    ${bottomNav("fun")}
+  </section>`;
+}
+
+function renderRanking() {
+  const members = leaderboard();
+  const me = members.find((member) => member.self);
+  const top = members.slice(0, 3);
+  return `<section class="screen ranking-screen">
+    ${topBar("見守りランキング", "fun")}
+    <div class="ranking-head"><span>WEEKLY RANKING</span><h1>今週の見守り人</h1><p>水やり・観察・クイズで集めたポイント</p></div>
+    <div class="podium">${[top[1], top[0], top[2]].map((member, index) => member ? `<div class="podium-person place-${member.rank}"><span>${member.rank === 1 ? "👑" : ""}</span><i>${member.self ? "柿" : member.name.slice(0, 1)}</i><b>${escapeHtml(member.name)}</b><small>${member.points.toLocaleString()} pt</small><em>${member.rank}</em></div>` : "").join("")}</div>
+    <div class="my-rank-card"><span>あなたの現在地</span><b>${me.rank}<small>位</small></b><p>${state.points.toLocaleString()} pt</p></div>
+    <div class="ranking-list">${members.slice(3).map((member) => `<div class="rank-row ${member.self ? "is-self" : ""}"><b>${member.rank}</b><i>${member.self ? "柿" : member.name.slice(0, 1)}</i><span>${escapeHtml(member.name)}${member.self ? "（あなた）" : ""}</span><strong>${member.points.toLocaleString()} pt</strong></div>`).join("")}</div>
+    <p class="ranking-note">デモ版ではほかの見守り人の順位をサンプルデータで表示しています。</p>
+    ${bottomNav("fun")}
+  </section>`;
+}
+
+function renderBadges() {
+  const unlocked = unlockedBadges();
+  const upcoming = nextBadge();
+  const previous = [...badgeCatalog].reverse().find((badge) => state.points >= badge.points) || badgeCatalog[0];
+  const progress = upcoming ? Math.min(100, ((state.points - previous.points) / (upcoming.points - previous.points)) * 100) : 100;
+  return `<section class="screen badges-screen">
+    ${topBar("ピンバッジ", "fun")}
+    <div class="badge-head"><span>COLLECTION</span><h1>見守りピンバッジ</h1><p>ポイントを集めて、特別なピンを解放しよう。</p><b>${unlocked.length} / ${badgeCatalog.length}</b></div>
+    ${upcoming ? `<div class="next-badge-progress"><div><span>次は「${upcoming.name}」</span><b>あと ${(upcoming.points - state.points).toLocaleString()}pt</b></div><i><em style="width:${progress}%"></em></i></div>` : `<div class="next-badge-progress complete"><b>すべてのバッジを集めました！</b></div>`}
+    <div class="badge-collection">${badgeCatalog.map((badge) => {
+      const isUnlocked = state.points >= badge.points;
+      return `<article class="pin-card ${isUnlocked ? "unlocked" : "locked"}"><div class="pin"><span>${isUnlocked ? badge.icon : "?"}</span><i></i></div><div><span>${badge.points.toLocaleString()}pt</span><h2>${badge.name}</h2><p>${badge.description}</p></div>${isUnlocked ? `<b class="owned-label">GET</b>` : `<b class="locked-label">🔒</b>`}</article>`;
+    }).join("")}</div>
+    ${bottomNav("fun")}
+  </section>`;
+}
+
+function renderKakiQuiz() {
+  const session = state.kakiQuiz;
+  if (!session || session.completed) return renderQuizResult();
+  const item = kakiQuizQuestions[session.index];
+  const selected = session.answers[session.index];
+  return `<section class="screen kaki-quiz-screen">
+    ${topBar("見知不柿クイズ", "fun")}
+    <div class="kaki-quiz-progress"><div><span>QUESTION</span><b>${session.index + 1} / ${kakiQuizQuestions.length}</b></div><i><em style="width:${((session.index + 1) / kakiQuizQuestions.length) * 100}%"></em></i><p>いまの正解 <b>${session.score}</b>問</p></div>
+    <div class="kaki-question-card">
+      <div class="quiz-fruit">柿</div>
+      <span class="question-no">Q${session.index + 1}.</span><h1>${item.question}</h1>
+      <div class="kaki-options">${item.options.map((option, index) => {
+        const answered = session.answered;
+        const css = answered ? index === item.answer ? "correct" : index === selected ? "wrong" : "muted" : "";
+        return `<button data-kaki-answer="${index}" class="${css}" ${answered ? "disabled" : ""}><i>${String.fromCharCode(65 + index)}</i><span>${option}</span><b>${answered && index === item.answer ? "✓" : answered && index === selected ? "×" : ""}</b></button>`;
+      }).join("")}</div>
+      ${session.answered ? `<div class="quiz-explanation ${selected === item.answer ? "is-correct" : "is-wrong"}"><b>${selected === item.answer ? "正解！ +10pt" : `おしい！ 正解は「${item.options[item.answer]}」`}</b><p>${item.explanation}</p></div>` : ""}
+    </div>
+    <div class="kaki-quiz-footer"><button class="primary-button" data-kaki-next ${session.answered ? "" : "disabled"}>${session.index === kakiQuizQuestions.length - 1 ? "結果を見る" : "次の問題へ"}</button><small>${session.review ? "復習モード：ポイントは加算されません" : "正解1問につき10pt"}</small></div>
+  </section>`;
+}
+
+function renderQuizResult() {
+  const session = state.kakiQuiz || { score: state.quizBestScore, awarded: 0, review: true };
+  const perfect = session.score === kakiQuizQuestions.length;
+  const unlocked = unlockedBadges();
+  return `<section class="screen kaki-result-screen">
+    ${topBar("クイズ結果", "fun")}
+    <div class="kaki-result-hero"><span>${perfect ? "🏆" : session.score >= 7 ? "👏" : "🌱"}</span><p>KAKI QUIZ RESULT</p><h1>${session.score}<small> / 10問 正解</small></h1><b>${perfect ? "見知不柿マスター！" : session.score >= 7 ? "かなりの柿ものしり！" : "ここから柿ものしり！"}</b></div>
+    <div class="quiz-point-result"><span>${session.review ? "復習モード" : "今回獲得したポイント"}</span><b>${session.review ? "加算なし" : `+${session.awarded} pt`}</b>${perfect && !session.review ? `<p>全問正解ボーナス +50ptを含みます</p>` : ""}</div>
+    <div class="result-badge-preview"><span>現在のコレクション</span><div>${unlocked.slice(-3).map((badge) => `<i title="${badge.name}">${badge.icon}</i>`).join("")}</div><b>${unlocked.length} / ${badgeCatalog.length} GET</b><button data-nav="badges">バッジを見る ›</button></div>
+    <div class="quiz-result-actions"><button class="primary-button" data-nav="fun">おたのしみ広場へ</button><button class="secondary-button" data-start-kaki-quiz>10問を復習する</button></div>
+    <p class="quiz-sources">クイズの内容は福島県・会津若松市の公開情報をもとに構成しています。</p>
+    ${bottomNav("fun")}
+  </section>`;
+}
+
 function renderMyPage() {
   const item = profile();
   return `<section class="screen mypage-screen">
     ${topBar("マイページ", "home")}
     <div class="profile-card">${mascotMarkup(item, "small")}<div><span>${item.name}の見守り人</span><h2>${escapeHtml(state.nickname)}</h2><p>${item.label}</p></div></div>
     <div class="mypage-points"><span>所持ポイント</span><b>${state.points.toLocaleString()} <small>pt</small></b></div>
+    <div class="mypage-feature-grid"><button data-nav="ranking"><span>♛</span><b>ランキング</b><small>今週の順位を見る</small></button><button data-nav="badges"><span>✦</span><b>ピンバッジ</b><small>${unlockedBadges().length} / ${badgeCatalog.length} GET</small></button></div>
     <div class="history-block">
       <h3>最近の水やり</h3>
       ${state.wateringTaps.length ? state.wateringTaps.slice(0, 5).map((tap) => `<div class="history-row"><span>${tap.date}</span><p>${tap.result === "M" || tap.result === "A" ? "リレー達成" : "見守り"}</p><b>+${tap.points} pt</b></div>`).join("") : `<p class="empty-state">まだ水やりの記録がありません。</p>`}
@@ -596,6 +785,11 @@ function render() {
     login: renderLogin,
     home: renderHome,
     chat: renderChat,
+    fun: renderFun,
+    ranking: renderRanking,
+    badges: renderBadges,
+    "kaki-quiz": renderKakiQuiz,
+    "quiz-result": renderQuizResult,
     mission: renderMission,
     watering: renderWatering,
     mypage: renderMyPage,
@@ -624,6 +818,49 @@ function secureRandom(max) {
     return value[0] % max;
   }
   return Math.floor(Math.random() * max);
+}
+
+function startKakiQuiz() {
+  const review = state.quizAwardDates.includes(todayKey());
+  state.kakiQuiz = { date: todayKey(), index: 0, answers: [], score: 0, answered: false, completed: false, review, awarded: 0 };
+  saveState();
+  go("kaki-quiz");
+}
+
+function answerKakiQuiz(answerIndex) {
+  const session = state.kakiQuiz;
+  if (!session || session.answered) return;
+  const item = kakiQuizQuestions[session.index];
+  session.answers[session.index] = answerIndex;
+  session.answered = true;
+  if (answerIndex === item.answer) session.score += 1;
+  saveState();
+  render();
+}
+
+function advanceKakiQuiz() {
+  const session = state.kakiQuiz;
+  if (!session?.answered) return;
+  if (session.index < kakiQuizQuestions.length - 1) {
+    session.index += 1;
+    session.answered = false;
+    saveState();
+    return render();
+  }
+
+  session.completed = true;
+  if (!session.review) {
+    const correctPoints = session.score * 10;
+    const perfectBonus = session.score === kakiQuizQuestions.length ? 50 : 0;
+    session.awarded = correctPoints + perfectBonus;
+    state.points += session.awarded;
+    state.quizAwardDates.push(todayKey());
+    state.journal.unshift({ date: todayKey(), type: "quiz", title: `見知不柿クイズ ${session.score}/10問`, detail: `+${session.awarded}pt${perfectBonus ? "・全問正解ボーナス獲得" : ""}` });
+  }
+  state.quizBestScore = Math.max(state.quizBestScore, session.score);
+  state.quizAttempts.unshift({ date: todayKey(), score: session.score, awarded: session.awarded, review: session.review });
+  saveState();
+  go("quiz-result");
 }
 
 function claimLoginBonus() {
@@ -777,6 +1014,10 @@ document.addEventListener("click", (event) => {
   if (event.target.closest("[data-start-quiz]")) {
     state.answers = []; state.quizIndex = 0; saveState(); return go("quiz");
   }
+  if (event.target.closest("[data-start-kaki-quiz]")) return startKakiQuiz();
+  const kakiAnswer = event.target.closest("[data-kaki-answer]");
+  if (kakiAnswer) return answerKakiQuiz(Number(kakiAnswer.dataset.kakiAnswer));
+  if (event.target.closest("[data-kaki-next]")) return advanceKakiQuiz();
   const answer = event.target.closest("[data-answer]");
   if (answer) {
     state.answers[state.quizIndex] = Number(answer.dataset.answer); saveState(); return render();
