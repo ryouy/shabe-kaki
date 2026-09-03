@@ -367,7 +367,7 @@ function renderTop() {
       <button class="text-button" data-nav="about">プロジェクトについて <span>›</span></button>
       <button class="text-button" data-nav="contact">お問い合わせ <span>›</span></button>
       <button class="text-button" data-faq>よくある質問 <span>⌄</span></button>
-      <div id="top-faq" class="inline-faq hidden"><b>本当に木と話せるの？</b><p>このデモでは柿の木らしい定型会話を楽しめます。実証時はセンサー値と会話AIを連携する設計です。</p></div>
+      <div id="top-faq" class="inline-faq hidden"><b>会話機能はどこまで実装済み？</b><p>このプロトタイプでは柿の木らしい定型応答と履歴保存を確認できます。本番実装ではセンサー値と会話AIを連携する想定です。</p></div>
     </div>
     <footer class="social-row"><span>𝕏</span><span>LINE</span><span>◎ Instagram</span></footer>
   </section>`;
@@ -442,7 +442,7 @@ function renderLogin() {
     <p class="login-lead">${item.name}が、あなたのことを<br />覚えていたいそうです。</p>
     <label class="nickname-field"><span>呼んでほしい名前</span><input id="nickname" maxlength="12" value="${escapeHtml(state.nickname === "見守り人さん" ? "" : state.nickname)}" placeholder="例：あき" /></label>
     <button class="google-button" data-login><span class="google-g">G</span> Googleでログイン</button>
-    <p class="demo-note">デモ版のためGoogleとは通信しません。<br />入力した情報はこの端末だけに保存されます。</p>
+    <p class="demo-note">開発確認用：Google認証は未接続です。<br />入力値はブラウザのlocalStorageだけに保存されます。</p>
     <div class="login-benefits"><b>ログインするとできること</b><span>会話の続きが残る</span><span>水やりでポイントが貯まる</span></div>
   </section>`;
 }
@@ -628,7 +628,7 @@ function renderRanking() {
     <div class="podium">${[top[1], top[0], top[2]].map((member, index) => member ? `<div class="podium-person place-${member.rank}"><span>${member.rank === 1 ? "👑" : ""}</span><i>${member.self ? "柿" : member.name.slice(0, 1)}</i><b>${escapeHtml(member.name)}</b><small>${member.points.toLocaleString()} pt</small><em>${member.rank}</em></div>` : "").join("")}</div>
     <div class="my-rank-card"><span>あなたの現在地</span><b>${me.rank}<small>位</small></b><p>${state.points.toLocaleString()} pt</p></div>
     <div class="ranking-list">${members.slice(3).map((member) => `<div class="rank-row ${member.self ? "is-self" : ""}"><b>${member.rank}</b><i>${member.self ? "柿" : member.name.slice(0, 1)}</i><span>${escapeHtml(member.name)}${member.self ? "（あなた）" : ""}</span><strong>${member.points.toLocaleString()} pt</strong></div>`).join("")}</div>
-    <p class="ranking-note">デモ版ではほかの見守り人の順位をサンプルデータで表示しています。</p>
+    <p class="ranking-note">開発確認用のため、他の見守り人と順位はサンプルデータです。</p>
     ${bottomNav("fun")}
   </section>`;
 }
@@ -721,7 +721,7 @@ function renderAbout() {
     <div class="about-hero"><span>会津の宝物を、未来へ。</span><h1>見知不柿とは？</h1><p>会津盆地で大切に育てられてきた、上品な甘さとやわらかな果肉が魅力の柿です。</p></div>
     <div class="about-content">
       <section><span class="section-kicker">OUR STORY</span><h2>木に人格があったなら。</h2><p>若い世代にも見知不柿を知ってほしい。その思いから、柿の木の今をイラストや会話で感じられる体験をつくりました。</p></section>
-      <section><span class="section-kicker">HOW IT WORKS</span><h2>みんなのバケツが届くまで</h2><div class="flow-row"><div><i>1</i><b>乾燥をお知らせ</b></div><span>→</span><div><i>2</i><b>みんなで注ぐ</b></div><span>→</span><div><i>3</i><b>8Lを給水</b></div></div><p class="caption">公開版では現地センサーと給水機器を連携する計画です。このデモでは20分の突発ミッションと共同達成を端末内で再現しています。</p></section>
+      <section><span class="section-kicker">HOW IT WORKS</span><h2>みんなのバケツが届くまで</h2><div class="flow-row"><div><i>1</i><b>乾燥をお知らせ</b></div><span>→</span><div><i>2</i><b>みんなで注ぐ</b></div><span>→</span><div><i>3</i><b>8Lを給水</b></div></div><p class="caption">本番では現地センサー・共有DB・給水機器を連携する想定です。このプロトタイプでは、20分の突発ミッションと共同達成の体験を端末内で再現しています。</p></section>
       <section><span class="section-kicker">FAQ</span><h2>よくある質問</h2>
         <details><summary>見知不柿は渋柿なの？</summary><p>収穫時は渋柿ですが、ていねいに渋抜きをすることで、とろりと上品な甘さになります。</p></details>
         <details><summary>水やりは何度でもできる？</summary><p>緊急ミッションへの参加は1日1回です。50タップまたは満水で8Lを給水し、1本3回・全体9回の上限で木を守ります。</p></details>
@@ -742,7 +742,7 @@ function renderContact() {
       <label>件名<input name="subject" required maxlength="50" placeholder="お問い合わせの件名" /></label>
       <label>お問い合わせ内容<textarea name="message" required maxlength="500" rows="7" placeholder="お問い合わせ内容をご入力ください"></textarea></label>
       <button class="primary-button" type="submit">送信する</button>
-      <p class="demo-note">デモ版では内容をこの端末内に保存します。</p>
+      <p class="demo-note">送信UI確認用です。入力内容は外部送信せず、localStorageに保存します。</p>
     </form>
   </section>`;
 }
@@ -753,7 +753,7 @@ function renderAdmin() {
   const recentMessages = state.messages.slice(-6).reverse();
   return `<section class="screen admin-screen">
     ${topBar("管理画面", "top")}
-    <div class="admin-heading"><span>管理者向けデモ</span><h1>給水制御</h1><p>柿の木 01 ／ ${profile().name}</p></div>
+    <div class="admin-heading"><span>開発メンバー確認用・管理画面プロトタイプ</span><h1>給水制御</h1><p>柿の木 01 ／ ${profile().name}</p></div>
     <div class="admin-actions ${state.irrigationPaused ? "paused" : "running"}">
       <div><span>現在の給水</span><b>${state.irrigationPaused ? "全停止中" : "稼働中"}</b></div>
       <button data-admin-toggle>${state.irrigationPaused ? "給水を再開" : "給水を全停止"}</button>
@@ -762,7 +762,7 @@ function renderAdmin() {
     <section class="admin-card"><h2>センサー状況 <small>現在</small></h2><div class="admin-metrics"><div><span>気温</span><b>${sensor.temperature} ℃</b></div><div><span>土壌水分</span><b>${sensor.moisture} %</b></div><div><span>通信</span><b class="online">正常</b></div></div></section>
     <section class="admin-card"><h2>水やり履歴 <small>最新5件</small></h2>${state.wateringTaps.length ? state.wateringTaps.slice(0, 5).map((tap) => `<div class="admin-log"><time>${tap.date} ${new Date(tap.timestamp).toLocaleTimeString("ja-JP", {hour:"2-digit",minute:"2-digit"})}</time><span>結果 ${tap.result}</span><b>+${tap.points} pt</b></div>`).join("") : `<p class="empty-state">記録はありません。</p>`}</section>
     <section class="admin-card"><h2>会話ログ <small>直近</small></h2>${recentMessages.length ? recentMessages.map((message) => `<div class="admin-chat"><span>${message.from === "tree" ? "木" : "人"}</span><p>${escapeHtml(message.text)}</p></div>`).join("") : `<p class="empty-state">記録はありません。</p>`}</section>
-    <div class="admin-users"><span>見守り人（デモ表示）</span><b>368人</b></div>
+    <div class="admin-users"><span>見守り人数（サンプル値）</span><b>368人</b></div>
   </section>`;
 }
 
@@ -797,7 +797,7 @@ function render() {
     contact: renderContact,
     admin: renderAdmin,
   };
-  document.querySelector("#app").innerHTML = (views[route] || renderTop)();
+  document.querySelector("#app").innerHTML = `<aside class="prototype-ribbon"><b>開発メンバー確認用プロトタイプ</b><span>外部連携未接続・端末内シミュレーション</span></aside>${(views[route] || renderTop)()}`;
   document.body.dataset.route = route;
   if (route === "chat") requestAnimationFrame(() => document.querySelector("#messages")?.scrollTo(0, 99999));
   if (document.querySelector("[data-countdown]")) {

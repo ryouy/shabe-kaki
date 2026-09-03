@@ -27,6 +27,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 .ambient-two { width: 520px; height: 520px; right: 4vw; bottom: 3vh; background: rgba(247, 214, 129, .3); }
 .app-shell { position: relative; width: min(100%, 430px); min-height: 100dvh; margin: 0 auto; background: var(--cream); box-shadow: 0 0 60px rgba(31, 91, 61, .2); overflow: hidden; }
 .screen { min-height: 100dvh; padding-bottom: calc(24px + env(safe-area-inset-bottom)); background: var(--cream); }
+.prototype-ribbon { position: relative; z-index: 30; display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 29px; padding: 5px 10px; background: #263b31; color: white; text-align: center; font-style: normal; }
+.prototype-ribbon b { font-size: 8px; letter-spacing: .04em; }.prototype-ribbon span { padding-left: 7px; border-left: 1px solid rgba(255,255,255,.3); color: #bed1c6; font-size: 7px; }
 
 .top-bar { position: sticky; top: 0; z-index: 20; min-height: 58px; padding: 8px 14px; display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; background: rgba(255, 249, 235, .93); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(105, 85, 57, .1); }
 .top-bar-light { background: rgba(255, 247, 226, .9); }
