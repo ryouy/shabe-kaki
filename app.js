@@ -169,6 +169,26 @@ const badgeCatalog = [
   { id: "legend", name: "伝説の散水士", points: 1000, icon: "🏆", description: "1,000pt達成。木と仲間に愛された最高位。" },
 ];
 
+const weatherCatalog = {
+  sunny: { label: "晴れ", icon: "☀", background: "assets/weather-sunny.png" },
+  cloudy: { label: "くもり・風", icon: "≋", background: "assets/weather-cloudy.png" },
+  rain: { label: "雨", icon: "☂", background: "assets/weather-rain.png" },
+  snow: { label: "雪", icon: "❄", background: "assets/weather-snow.png" },
+  night: { label: "夜", icon: "☾", background: "assets/weather-night.png" },
+};
+
+const treeStateCatalog = [
+  { id: "healthy", label: "元気", sprite: 0, weather: "sunny", status: "元気いっぱい", detail: "ごきげん", message: "今日もいい天気だね〜。会いに来てくれてうれしいな！" },
+  { id: "thirsty", label: "乾燥", sprite: 1, weather: "sunny", status: "お水がほしいな", detail: "のどが渇いている", message: "喉がカラカラだ〜！みんなのバケツをつないで、お水を運んでくんちぇ！" },
+  { id: "hot", label: "暑い", sprite: 2, weather: "sunny", status: "ちょっと暑そう", detail: "木陰でひと休み", message: "今日はあっついな〜。涼しい風が来るまで、ゆっくり見守ってね。" },
+  { id: "cold", label: "寒い", sprite: 3, weather: "snow", status: "冬じたく中", detail: "寒さに耐えている", message: "雪のお布団で冬ごもり中。春までのんびり力をためるよ。" },
+  { id: "rainy", label: "雨の日", sprite: 4, weather: "rain", status: "雨を満喫中", detail: "しっとりうるおう", message: "雨つぶが葉っぱをくすぐってるよ。今日は自然のお水でひと安心！" },
+  { id: "windy", label: "強風", sprite: 5, weather: "cloudy", status: "風が強いよ", detail: "枝を踏ん張っている", message: "びゅうびゅう風が吹いてるぞ〜。飛ばされないように応援してね！" },
+  { id: "sleepy", label: "おやすみ", sprite: 6, weather: "night", status: "おやすみ中", detail: "静かに休んでいる", message: "夜の畑はしーんとしてるよ。今日も見守ってくれて、ありがとう。" },
+  { id: "watered", label: "水やり成功", sprite: 7, weather: "sunny", status: "うるおい満タン", detail: "水やりに大喜び", message: "お水が届いたよ！みんなのバケツ、しっかり受け取ったぞ〜！" },
+  { id: "harvest", label: "収穫の季節", sprite: 8, weather: "sunny", status: "実りの季節", detail: "柿がたくさん", message: "今年もおいしそうな実ができたよ。みんなで実りをお祝いしよう！" },
+];
+
 const defaultState = () => ({
   loggedIn: false,
   nickname: "見守り人さん",
@@ -195,6 +215,7 @@ const defaultState = () => ({
   quizAwardDates: [],
   quizBestScore: 0,
   quizAttempts: [],
+  sceneOverride: null,
 });
 
 let state = loadState();
@@ -476,6 +497,55 @@ function currentSensor() {
   return { temperature, moisture: state.soilMoisture };
 }
 
+function currentPresentation() {
+  if (state.sceneOverride) {
+    const overridden = treeStateCatalog.find((item) => item.id === state.sceneOverride);
+    if (overridden) return { state: overridden, weather: weatherCatalog[overridden.weather], automatic: false };
+  }
+
+  const now = new Date();
+  const hour = now.getHours();
+  const month = now.getMonth() + 1;
+  const sensor = currentSensor();
+  const mission = state.mission?.date === todayKey() && state.mission.status === "active";
+  const recentWatering = state.waterings.some((item) => item.success && Date.now() - item.timestamp < 3 * 60 * 60 * 1000);
+  const weatherId = hour < 6 || hour >= 19
+    ? "night"
+    : [12, 1, 2].includes(month)
+      ? "snow"
+      : (now.getFullYear() + month + now.getDate()) % 4 === 0
+        ? "rain"
+        : (now.getFullYear() + month + now.getDate()) % 4 === 1
+          ? "cloudy"
+          : "sunny";
+
+  let stateId = "healthy";
+  if (mission || sensor.moisture < 25) stateId = "thirsty";
+  else if (recentWatering) stateId = "watered";
+  else if (weatherId === "night") stateId = "sleepy";
+  else if (weatherId === "snow" || sensor.temperature <= 8) stateId = "cold";
+  else if (weatherId === "rain") stateId = "rainy";
+  else if (weatherId === "cloudy") stateId = "windy";
+  else if (sensor.temperature >= 27) stateId = "hot";
+  else if ([9, 10, 11].includes(month)) stateId = "harvest";
+
+  const treeState = treeStateCatalog.find((item) => item.id === stateId);
+  return { state: treeState, weather: weatherCatalog[weatherId], automatic: true };
+}
+
+function treeStateMarkup(item) {
+  const column = item.sprite % 3;
+  const row = Math.floor(item.sprite / 3);
+  return `<div class="tree-state-character" role="img" aria-label="柿キャラクター：${item.label}" style="--sprite-column:${column};--sprite-row:${row}"></div>`;
+}
+
+function cycleTreeState() {
+  const currentIndex = treeStateCatalog.findIndex((item) => item.id === state.sceneOverride);
+  state.sceneOverride = currentIndex < 0 ? treeStateCatalog[0].id : currentIndex === treeStateCatalog.length - 1 ? null : treeStateCatalog[currentIndex + 1].id;
+  saveState();
+  render();
+}
+
 function renderHome() {
   const item = profile();
   const sensor = currentSensor();
@@ -484,7 +554,10 @@ function renderHome() {
   const active = mission?.date === todayKey() && mission.status === "active";
   const completed = mission?.date === todayKey() && ["success", "blocked"].includes(mission.status);
   const expired = mission?.date === todayKey() && mission.status === "expired";
-  const greeting = active ? "喉がカラカラだ〜！みんなのバケツをつないで、お水を運んでくんちぇ！" : sensor.moisture < 25 ? "ちょっと喉が渇いてきたみたい。会いに来てくれてうれしいな！" : "お水をもらって元気いっぱい。きょうものんびり話そうな〜。";
+  const presentation = currentPresentation();
+  const treeState = presentation.state;
+  const weather = presentation.weather;
+  const greeting = treeState.message;
   const waterAction = active
     ? `<button class="water-button mission-button" data-nav="mission"><span>♧</span>${mission.joined ? "ミッション状況" : "水やりに参加"}</button>`
     : completed
@@ -494,15 +567,18 @@ function renderHome() {
         : `<button class="water-button observe-button" data-observe><span>❧</span>${capped ? "葉っぱをなでる" : "木を観察する"} +2pt</button>`;
   return `<section class="screen home-screen">
     ${topBar(item.name, "top", true)}
-    <div class="home-hero">
+    <div class="home-hero scene-${treeState.id}" style="background-image:url('${weather.background}')">
+      <div class="weather-chip"><span>${weather.icon}</span><b>${weather.label}</b><small>${presentation.automatic ? "自動表示" : "確認表示"}</small></div>
       <div class="speech-bubble">${greeting}</div>
-      <div class="home-status"><span>${sensor.moisture < 25 ? "お水がほしいな" : "元気いっぱい"}</span><b>${sensor.moisture < 25 ? "のどが渇いている" : "うるおっている"}</b></div>
+      ${treeStateMarkup(treeState)}
+      <div class="home-status"><span>${treeState.status}</span><b>${treeState.detail}</b></div>
     </div>
     <div class="sensor-row">
       <div><span class="mini-icon hot">☀</span><p>気温 <b>${sensor.temperature}℃</b></p></div>
       <div><span class="mini-icon wet">◉</span><p>土壌水分 <b>${sensor.moisture}%</b></p></div>
     </div>
     <div class="home-content">
+      <div class="state-preview"><div><span>状態イラスト確認</span><b>${treeState.label}${presentation.automatic ? "（自動）" : ""}</b></div><button data-cycle-tree-state>${state.sceneOverride ? "次の状態" : "全9種を見る"} <i>›</i></button></div>
       ${active ? `<button class="mission-alert" data-nav="mission"><span class="live-dot"></span><div><b>緊急ミッション発生中</b><small>${item.name}へ、みんなで水を運ぼう</small></div><time data-countdown="${mission.endsAt}">あと ${countdownLabel(mission.endsAt)}</time></button>` : ""}
       <div class="action-grid">
         ${waterAction}
@@ -1049,6 +1125,7 @@ document.addEventListener("click", (event) => {
   }
   if (event.target.closest("[data-join-mission]")) return joinMission();
   if (event.target.closest("[data-observe]")) return observeTree();
+  if (event.target.closest("[data-cycle-tree-state]")) return cycleTreeState();
   if (event.target.closest("[data-share]")) return shareResult();
   if (event.target.closest("[data-share-x]")) return window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText())}&url=${encodeURIComponent(location.href.split("#")[0])}`, "_blank", "noopener,noreferrer");
   if (event.target.closest("[data-share-line]")) return window.open(`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(location.href.split("#")[0])}&text=${encodeURIComponent(shareText())}`, "_blank", "noopener,noreferrer");
