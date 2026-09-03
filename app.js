@@ -409,6 +409,7 @@ function renderQuiz() {
       <div class="answer-list">${question.options
         .map(([label], optionIndex) => `<button class="answer-button ${selected === optionIndex ? "selected" : ""}" data-answer="${optionIndex}" ${quizTransitioning ? "disabled" : ""}><span>${String.fromCharCode(65 + optionIndex)}.</span>${label}<i></i></button>`)
         .join("")}</div>
+      ${index > 0 ? `<button class="quiz-back-button" data-nav="quiz-back" ${quizTransitioning ? "disabled" : ""}>‹　1つ前の質問に戻る</button>` : ""}
     </div>
   </section>`;
 }
